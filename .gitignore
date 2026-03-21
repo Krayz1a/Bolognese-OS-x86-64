@@ -1,0 +1,19 @@
+# build outputs
+build/
+out/
+*.o
+*.a
+*.elf
+*.bin
+*.iso
+*.img
+*.map
+
+# tooling
+*.log
+*.tmp
+
+# editors
+.vscode/
+.idea/
+*~
