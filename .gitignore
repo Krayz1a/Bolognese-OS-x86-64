@@ -1,0 +1,23 @@
+# build outputs
+build/
+out/
+*.o
+*.a
+*.elf
+*.bin
+*.iso
+*.img
+*.map
+*.swp
+*.swo
+*.swn
+.*.sw[a-p]
+
+# tooling
+*.log
+*.tmp
+
+# editors
+.vscode/
+.idea/
+*~
