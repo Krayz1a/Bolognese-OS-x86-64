@@ -25,6 +25,12 @@ SECTIONS
 
 	. = ALIGN(4096);
 
+        .limine_requests : {
+                KEEP(*(.limine_requests))
+        }
+
+	. = ALIGN(4096);
+
 	.bss : {
 		*(COMMON)
 		*(.bss .bss.*)

@@ -26,6 +26,24 @@ static volatile struct limine_framebuffer_request framebuffer_request = {
 	.revision = 0
 };
 
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_memmap_request memmap_request = {
+        .id = LIMINE_MEMMAP_REQUEST_ID,
+        .revision = 0
+};
+
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_hhdm_request hhdm_request = {
+        .id = LIMINE_HHDM_REQUEST_ID,
+        .revision = 0
+};
+
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_executable_address_request executable_address_request = {
+        .id = LIMINE_EXECUTABLE_ADDRESS_REQUEST_ID,
+        .revision = 0
+};
+
 // Halt forever
 static void hcf(void){
 	__asm__ __volatile__ ("cli");

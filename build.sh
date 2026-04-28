@@ -15,10 +15,12 @@ x86_64-elf-gcc -I./src -c src/pmm.c -o pmm.o -g -std=c11 -ffreestanding -O2 -Wal
 
 x86_64-elf-gcc -I./src -c src/string.c -o string.o -g -std=c11 -ffreestanding -O2 -Wall -Wextra -mno-red-zone -mcmodel=kernel -mgeneral-regs-only
 
+x86_64-elf-gcc -I./src -c src/vmm.c -o vmm.o -g -std=c11 -ffreestanding -O2 -Wall -Wextra -mno-red-zone -mcmodel=kernel -mgeneral-regs-only
+
 x86_64-elf-objcopy -O elf64-x86-64 -I binary src/font.psf font.o
 
 echo "Linking..."
-x86_64-elf-gcc -T linker.ld -o kernel.elf kernel.o idt.o pic.o pmm.o kprint.o string.o font.o -ffreestanding -O2 -nostdlib -lgcc
+x86_64-elf-gcc -T linker.ld -o kernel.elf kernel.o idt.o pic.o vmm.o pmm.o kprint.o string.o font.o -ffreestanding -O2 -nostdlib -lgcc
 
 echo "Generating assembly dump..."
 x86_64-elf-objdump -S kernel.elf > kernel.asm

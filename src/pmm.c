@@ -3,23 +3,12 @@
 #include "limine.h"
 #include "kprint.h"
 #include "string.h"
+#include "boot.h"
 
 #include <stdint.h>
 #include <stddef.h>
 
 #define PAGE_SIZE 4096
-
-__attribute__((used, section(".limine_requests")))
-static volatile struct limine_memmap_request memmap_request = {
-        .id = LIMINE_MEMMAP_REQUEST_ID,
-        .revision = 0
-};
-
-__attribute__((used, section(".limine_requests")))
-static volatile struct limine_hhdm_request hhdm_request = {
-        .id = LIMINE_HHDM_REQUEST_ID,
-        .revision = 0
-};
 
 uint8_t* bitmap;
 uint64_t bitmap_pbase;
