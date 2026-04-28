@@ -47,6 +47,7 @@ void pmm_dump_usable_memmap(void) {
         }
 }
 
+// Find the highest memory address available
 uint64_t pmm_max_usable_addr(void) {
 	uint64_t max = 0;
 	if(memmap_request.response != NULL) {
@@ -59,10 +60,12 @@ uint64_t pmm_max_usable_addr(void) {
 	return max;
 }
 
+// Calculates the size of the bitmap array in byte
 size_t pmm_get_bitmap_size(void) {
 	return (((highest_usable_addr + PAGE_SIZE - 1) / PAGE_SIZE) + 7) / 8;
 }
 
+// Scans the memory map to find a contiguous block of usable RAM large enough to hold the bitmap
 uint64_t pmm_get_bitmap_pbase(void){
 	if(memmap_request.response != NULL) {
                 for (size_t idx = 0; idx < memmap_request.response->entry_count; idx++) {
@@ -76,6 +79,9 @@ uint64_t pmm_get_bitmap_pbase(void){
 	return 0;
 }
 
+
+// Iterates over Limine's map and flips the bits corresponding to usable regions to 0
+// Finally, it re-marks the memory occupied by the bitmap itself back to 1 so the OS doesn't accidentally allocate its own tracking data
 void pmm_zero_usable_pages(void) {
 	if(memmap_request.response != NULL) {
 		for (size_t idx = 0; idx < memmap_request.response->entry_count; idx++) {
@@ -102,7 +108,7 @@ uint64_t pmm_alloc_page(void) {
 	for (size_t i = last_scanned_i; i < bitmap64_size; i++) {
 		if(bitmap_64[i] == 0xFFFFFFFFFFFFFFFF) continue;
 
-		size_t index = __builtin_ffsll(~(bitmap_64[i])) - 1;
+		size_t index = __builtin_ffsll(~(bitmap_64[i])) - 1;	// Compiler function (BSF on x86)
 
 		size_t page_idx = i * 64 + index;
 		uint64_t paddr = page_idx * PAGE_SIZE;
@@ -128,6 +134,7 @@ uint64_t pmm_alloc_page(void) {
 	}
 
 	// We only check the remainder bytes if the main RAM is completely full
+	// Checks each byte individually
 	for (size_t i = bitmap_size & ~0x7ULL; i < bitmap_size; i++) {
 		uint64_t byte = (uint64_t)bitmap[i] | ~((1ULL << 8) - 1ULL);
 

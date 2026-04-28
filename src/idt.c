@@ -93,7 +93,7 @@ static void keyboard_handler(struct interrupt_frame *frame) {
 				print_str(str);
 			}
 
-			draw_char(ascii, 0x00FF00);
+			draw_char(ascii, 0x00FF00); // Bright Green 
 		}
 	}
 	pic_send_eoi(1);	// keyboard wired to IRQ 1 of the Master PIC
@@ -103,12 +103,16 @@ void idt_init(void) {
 	idtr.base = (uint64_t)&idt[0];
 	idtr.limit = (uint16_t)sizeof(idt) - 1;
 
+	// First 32 entries (0-31) are reserved by intel for CPU exceptions
 	for (int idx=0; idx < 32; idx++){
 		idt_set_entry(idx, generic_exception_handler, 0x8E);
 	}
 
 	idt_set_entry(33, keyboard_handler, 0x8E);
 
+	// Load Interrupt Descriptor Table (lidt) instruction loads the memory address
+	// and size of the IDT into the idtr CPU register so it knows where to find the idt
 	__asm__ __volatile__ ("lidt %0" : : "m"(idtr));
+
 	__asm__ __volatile__ ("sti");
 }

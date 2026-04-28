@@ -17,29 +17,29 @@ uint32_t cursor_x = 0;
 uint32_t cursor_y = 0;
 
 __attribute__((used, section(".limine_requests")))
-static volatile uint64_t base_revision[] = LIMINE_BASE_REVISION(3);
+volatile uint64_t base_revision[] = LIMINE_BASE_REVISION(3);
 
 // Force the compiler to keep this struct and put it in a special section
 __attribute__((used, section(".limine_requests")))
-static volatile struct limine_framebuffer_request framebuffer_request = {
+volatile struct limine_framebuffer_request framebuffer_request = {
 	.id = LIMINE_FRAMEBUFFER_REQUEST_ID,
 	.revision = 0
 };
 
 __attribute__((used, section(".limine_requests")))
-static volatile struct limine_memmap_request memmap_request = {
+volatile struct limine_memmap_request memmap_request = {
         .id = LIMINE_MEMMAP_REQUEST_ID,
         .revision = 0
 };
 
 __attribute__((used, section(".limine_requests")))
-static volatile struct limine_hhdm_request hhdm_request = {
+volatile struct limine_hhdm_request hhdm_request = {
         .id = LIMINE_HHDM_REQUEST_ID,
         .revision = 0
 };
 
 __attribute__((used, section(".limine_requests")))
-static volatile struct limine_executable_address_request executable_address_request = {
+volatile struct limine_executable_address_request executable_address_request = {
         .id = LIMINE_EXECUTABLE_ADDRESS_REQUEST_ID,
         .revision = 0
 };
@@ -116,16 +116,19 @@ void kernel_main(void){
 		hcf();
 	}
 
+	// Sets up the Interrupt Descriptor Table (IDT) so the CPU knows how to handle exceptions and hardware interrupts
 	idt_init();
 
 	print_str("Hello from the 64-bit Higher Half!\n");
 
-	pic_remap(32,40);
-	
+	// Reconfigures the  Programmable Interrupt Controller (PIC) so hardware interrupts don't conflict with CPU exceptions
+	pic_remap(32,40);	
+
+	// Initializes the Physical Memory Manager (PMM) to keep track of free and used RAM frames
 	pmm_init();	
 	
 
-	// __asm__ __volatile__ ("int $0");
+	__asm__ __volatile__ ("int $0");
 	for (;;) {
 		__asm__ __volatile__ ("hlt");
 	}

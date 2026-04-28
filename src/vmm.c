@@ -49,7 +49,7 @@ void vmm_map_page(uint64_t* pml4, uint64_t virtual_addr, uint64_t physical_addr,
 
 void vmm_init(void) {
 	hhdm_offset = hhdm_request.response->offset;
-	uint64_t* kernel_pml4 = (uint64_t*)(pmm_page_alloc + hhdm_offset);
+	uint64_t* kernel_pml4 = (uint64_t*)(pmm_page_alloc() + hhdm_offset);
 	memset((void*)kernel_pml4, 0, PAGE_SIZE);
 
 	if(memmap_request.response != NULL) {
@@ -57,13 +57,25 @@ void vmm_init(void) {
                         struct limine_memmap_entry *mm = memmap_request.response->entries[idx];
 
                         for (uint64_t p = mm->base; p < mm->base + mm->length; p += PAGE_SIZE) {
-                                vmm_map_page(kernel_pml4, (p + hhdm_offest) & PAGE_ALLIGN,
-						p & PAGE_ALLIGN, PTE_PRESENT | PTE_WRITABLE);
+                                vmm_map_page(kernel_pml4, (p + hhdm_offset) & PAGE_ALIGN,
+						p & PAGE_ALIGN, PTE_PRESENT | PTE_WRITABLE);
                         }
                 }
         }
 
+
+	// Need to grab length from LIMINE_MEMMAP_KERNEL_AND_MODULES and map all pages using executable_starting_address_base	
+	if(memmap_request.response != NULL) {
+                for (size_t idx = 0; idx < memmap_request.response->entry_count; idx++) {
+                        struct limine_memmap_entry *mm = memmap_request.response->entries[idx];
+                        if (mm->type != LIMINE_MEMMAP_USABLE) continue;
+                        if ((uint64_t)bitmap_size < mm->length) {
+                                return mm->base;
+                        } 
+                }
+        }
+
 	// Mapping executable_starting_address
-	vmm_map_page(kernel_pml4, executable_address_request.response->virtual_base & PAGE_ALLIGN
-			executable_address_request.response->physical_base & PAGE_ALLIGN, 
+	vmm_map_page(kernel_pml4, executable_address_request.response->virtual_base & PAGE_ALIGN
+			executable_address_request.response->physical_base & PAGE_ALIGN, 
 }
