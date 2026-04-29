@@ -6,7 +6,17 @@
 
 #define PAGE_SIZE 4096
 
+extern uint8_t text_start_addr[];
+extern uint8_t text_end_addr[];
+extern uint8_t rodata_start_addr[];
+extern uint8_t rodata_end_addr[];
+extern uint8_t data_start_addr[];
+extern uint8_t data_end_addr[];
+extern uint8_t bss_start_addr[];
+extern uint8_t bss_end_addr[];
+
 uint64_t hhdm_offset;;
+
 
 
 void vmm_map_page(uint64_t* pml4, uint64_t virtual_addr, uint64_t physical_addr, uint64_t flags){
@@ -52,6 +62,10 @@ void vmm_init(void) {
 	uint64_t* kernel_pml4 = (uint64_t*)(pmm_page_alloc() + hhdm_offset);
 	memset((void*)kernel_pml4, 0, PAGE_SIZE);
 
+	uint64_t virt_base = executable_address_request.response->virtual_base;
+    	uint64_t phys_base = executable_address_request.response->physical_base;
+	uint64_t kernel_phys_offset = virt_base - phys_base;
+
 	if(memmap_request.response != NULL) {
                 for (size_t idx = 0; idx < memmap_request.response->entry_count; idx++) {
                         struct limine_memmap_entry *mm = memmap_request.response->entries[idx];
@@ -63,19 +77,8 @@ void vmm_init(void) {
                 }
         }
 
+	// Now we need to map the kernel executable addresses
+	// Start with .text
+	for (uint64_t v = (uint64_t)&text_start_addr & PAGE_ALIGN	
 
-	// Need to grab length from LIMINE_MEMMAP_KERNEL_AND_MODULES and map all pages using executable_starting_address_base	
-	if(memmap_request.response != NULL) {
-                for (size_t idx = 0; idx < memmap_request.response->entry_count; idx++) {
-                        struct limine_memmap_entry *mm = memmap_request.response->entries[idx];
-                        if (mm->type != LIMINE_MEMMAP_USABLE) continue;
-                        if ((uint64_t)bitmap_size < mm->length) {
-                                return mm->base;
-                        } 
-                }
-        }
-
-	// Mapping executable_starting_address
-	vmm_map_page(kernel_pml4, executable_address_request.response->virtual_base & PAGE_ALIGN
-			executable_address_request.response->physical_base & PAGE_ALIGN, 
 }
